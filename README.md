@@ -1,7 +1,7 @@
 # Quadcopter-env
 Reinforcement Learning Quadcopter Environment
 
-![Drone](/img/drones.png)
+![Drone](/img/quadImg.png)
 
 The Quadcopter-env is a physics Reinforcment Learning Environment training a quadcopter to acccomplish various objectives. The environment was created using vpython a simple light weight 3d library based on glowscript. (See https://vpython.org/)
 
