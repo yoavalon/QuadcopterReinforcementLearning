@@ -35,3 +35,6 @@ In the first default task the environment is configured to motivate learning of 
 When performing the training using PPO and a 3 dense layers together with a dropout layer the observation is that the initial policy learns to accelerate the drone into the right direction. In a further milestone the acceleration is addapted to land more close to the actual target. A much more advanced policy will accelerate the drone faster in the beginning, and counter accelerate it towards the goals. A higher episode length will motivate this behaviour more.
 
 ![Drone](/img/rews2.png)
+
+## Multi-Drone Coordination
+A single policy extracts actions that are split to multiple drones. Respective reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now. 
