@@ -1,5 +1,5 @@
-# Quadcopter-env
-Reinforcement Learning Quadcopter Environment
+# Reinforcement Learning Quadcopter Environment 
+Quadcopter-env
 
 ![Drone](/img/quadImg.png)
 
