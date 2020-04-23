@@ -38,5 +38,6 @@ When performing the training using PPO and a 3 dense layers together with a drop
 
 ![Drone](/img/rews2.png)
 
-## Multi-Drone Coordination
-A single policy extracts actions that are split to multiple drones. Respective reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now. 
+## Multi-Agent Coordination
+This task is motivated my Multi-Agent Reinforcement Learning environments that extract multiple reward signals and a single policy extracts actions that are split to multiple drones. Respective multiple reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now. 
+The challenge here is to construct networks that are able to perform a distinctive value estimation. A standard actor-critic reinforcement learning appraoch would fail here and optimize parts of the policy that have a dominant reward extraction. 
