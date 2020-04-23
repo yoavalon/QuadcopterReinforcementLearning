@@ -32,12 +32,12 @@ To cite this repository in publications:
 ## Approaching a target -task
 In the first default task the environment is configured to motivate learning of moving to drone to a green target point.
 
-![Drone](/img/droneTrace2.png)
+![Drone](/img/singleQuad.png)
 
 When performing the training using PPO and a 3 dense layers together with a dropout layer the observation is that the initial policy learns to accelerate the drone into the right direction. In a further milestone the acceleration is addapted to land more close to the actual target. A much more advanced policy will accelerate the drone faster in the beginning, and counter accelerate it towards the goals. A higher episode length will motivate this behaviour more.
-
-![Drone](/img/rews2.png)
 
 ## Multi-Agent Coordination
 This task is motivated my Multi-Agent Reinforcement Learning environments that extract multiple reward signals and a single policy extracts actions that are split to multiple drones. Respective multiple reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now. 
 The challenge here is to construct networks that are able to perform a distinctive value estimation. A standard actor-critic reinforcement learning appraoch would fail here and optimize parts of the policy that have a dominant reward extraction. 
+
+![Drone](/img/quadImg.png)
