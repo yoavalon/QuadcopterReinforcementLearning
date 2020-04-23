@@ -16,6 +16,8 @@ To solve the environment using Proximate Policy Optimization (PPO) (https://arxi
 
 The Environment is highly customizeable and many other tasks can be implemented.
 
+The environment q4envQ.py runs training in background without visualization and q4env.py has a visualization. Since models are stored using train.py we recommend using q4envQ.py for training, and to visualiza restore the model to q4env.py
+
 To cite this repository in publications:
 
     @misc{Quadcopter-env,
