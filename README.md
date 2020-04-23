@@ -9,7 +9,7 @@ Prerequesits :
 
 * Python 3.X
 * panda3d `pip3 install Panda3D`
-* Tensorflow 1.X
+* Tensorflow (or other prefered Deep Learning Framework)
   
 The environment simulates the physics of quadcopter movement. 
 To solve the environment using Proximate Policy Optimization (PPO) (https://arxiv.org/abs/1707.06347) we use the Reinforcement Learning Framework RLlib. (https://ray.readthedocs.io/en/latest/rllib.html).
