@@ -36,6 +36,12 @@ In the first default task the environment is configured to motivate learning of 
 
 When performing the training using PPO and a 3 dense layers together with a dropout layer the observation is that the initial policy learns to accelerate the drone into the right direction. In a further milestone the acceleration is addapted to land more close to the actual target. A much more advanced policy will accelerate the drone faster in the beginning, and counter accelerate it towards the goals. A higher episode length will motivate this behaviour more.
 
+The observation- and action space are defined as : 
+        self.action_space = Box(-1,1,shape=(3,))  
+        self.observation_space = Box(-50,50,shape=(6,))
+
+For 3 continous actions that control the drones inclination force. The 6 observation dimensions return 3 dimensional position and 3 dimensional velocity. The environment is easily adaptable to different forms of control such as engine power in a 4 dimensional array, then the force has to be calculated. 
+
 ## Multi-Agent Coordination
 This task is motivated my Multi-Agent Reinforcement Learning environments that extract multiple reward signals and a single policy extracts actions that are split to multiple drones. Respective multiple reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now. 
 The challenge here is to construct networks that are able to perform a distinctive value estimation. A standard actor-critic reinforcement learning appraoch would fail here and optimize parts of the policy that have a dominant reward extraction. 
