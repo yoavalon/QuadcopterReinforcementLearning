@@ -3,12 +3,12 @@ Reinforcement Learning Quadcopter Environment
 
 ![Drone](/img/quadImg.png)
 
-The Quadcopter-env is a physics Reinforcment Learning Environment training a quadcopter to acccomplish various objectives. The environment was created using vpython a simple light weight 3d library based on glowscript. (See https://vpython.org/)
+The Quadcopter-env is a physics Reinforcment Learning Environment training a quadcopter to acccomplish various objectives. The environment was created using panda3d and it's Bullet a modern and open source physics engine (See https://www.panda3d.org/ and https://docs.panda3d.org/1.10/python/programming/physics/bullet/index)
 
 Prerequesits : 
 
 * Python 3.X
-* vpython `pip3 install vpython`
+* panda3d `pip3 install Panda3D`
 * Tensorflow 1.X
   
 The environment simulates the physics of quadcopter movement. 
