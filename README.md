@@ -42,6 +42,9 @@ The observation- and action space are defined as :
 
 For 3 continous actions that control the drones inclination force. The 6 observation dimensions return 3 dimensional position and 3 dimensional velocity. The environment is easily adaptable to different forms of control such as engine power in a 4 dimensional array, then the force has to be calculated. 
 
+![Drone](/img/rews.png)
+Mean reward signal over episode. 
+
 ## Multi-Agent Coordination
 This task is motivated my Multi-Agent Reinforcement Learning environments that extract multiple reward signals and a single policy extracts actions that are split to multiple drones. Respective multiple reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now. 
 The challenge here is to construct networks that are able to perform a distinctive value estimation. A standard actor-critic reinforcement learning appraoch would fail here and optimize parts of the policy that have a dominant reward extraction. 
