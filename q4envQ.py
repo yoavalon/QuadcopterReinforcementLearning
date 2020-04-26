@@ -22,14 +22,14 @@ class DroneEnv(gym.Env):
 
     def __init__(self,config):
         #def __init__(self):
-        
-        self.ep = 0                
+
+        self.ep = 0
         self.ep_rew = 0
         self.t = 0
-                
-        self.action_space = Box(-1,1,shape=(3,))  
-        self.observation_space = Box(-50,50,shape=(6,))
-        
+
+        self.action_space = Box(-1,1,shape=(3,))
+        self.observation_space = Box(-50,50,shape=(9,))
+
         self.target = 8*np.random.rand(3)
         self.construct()
 
@@ -73,7 +73,7 @@ class DroneEnv(gym.Env):
         render.setLight(plnp)
 
         # Drone
-        
+
         shape = BulletBoxShape(Vec3(0.5, 0.5, 0.5))
         self.drone = BulletRigidBodyNode('Box')
         self.drone.setMass(1.0)
@@ -112,36 +112,37 @@ class DroneEnv(gym.Env):
         self.targetObj.setPos(Vec3(self.target[0], self.target[1], self.target[2]))
 
 
-    def getState(self) : 
+    def getState(self) :
 
-        vel = self.drone.get_linear_velocity()    
+        vel = self.drone.get_linear_velocity()
         po = self.drone.transform.pos
         ang = self.droneN.getHpr()
 
-        velocity = np.array([vel[0], vel[1], vel[2]])
+        velocity = np.nan_to_num(np.array([vel[0], vel[1], vel[2]]))
         position = np.array([po[0], po[1], po[2]])
         #angle = np.array([ang[0], ang[1], ang[2]])/360
 
-        state = np.array([position, self.target]).reshape(6,)
-        
-        return state 
+        state = np.array([position, self.target, velocity]).reshape(9,)
+        state = np.around(state, decimals = 2)  #experimental, decimal places
 
-    def getReward(self) : 
+        return state
+
+    def getReward(self) :
 
         reward = 0
 
-        s = self.getState()[:3]
-        d = np.linalg.norm(s - self.target)
-        
-        ds = np.linalg.norm(s[:3] - np.array([0,0,4]))
+        s = self.getState()
 
-        if ds> 0 : 
-            if d < 7 : 
-                reward = (7- d)/20
-            else : 
-                reward = (-1)*d/20
-       
-        return reward    
+        d = np.linalg.norm(s[0:3] - s[3:6])
+
+        if d < 5 :
+            reward = 5 - d
+            reward = reward/20
+
+        if np.sum(s[6:9]) == 0 :
+            reward = -0.1
+
+        return reward
 
     def reset(self):
 
@@ -163,21 +164,21 @@ class DroneEnv(gym.Env):
         print(f'{self.ep}   {self.t}    {self.ep_rew:+8.2f}    {me:+6.2f}    {d:6.2f}    {ds:6.2f}    {dv:6.2f}') #{s[:6]}
 
         #physics reset
-        self.droneN.setPos(0,0,4)        
-        self.droneN.setHpr(0, 0, 0)  
+        self.droneN.setPos(0,0,4)
+        self.droneN.setHpr(0, 0, 0)
         self.drone.set_linear_velocity(Vec3(0,0,0))
         self.drone.setAngularVelocity(Vec3(0,0,0))
 
         self.rotorForce = np.array([0,0,9.81], dtype = np.float)
 
-        #define new target: 
+        #define new target:
         self.target = 8*(2*np.random.rand(3)-1)
-        self.target[2] = np.abs(self.target[2]) 
+        self.target[2] = np.abs(self.target[2])
         self.targetObj.setPos(Vec3(self.target[0], self.target[1], self.target[2]))
-       
 
-        self.ep +=1        
-        self.t = 0 
+
+        self.ep +=1
+        self.t = 0
         self.ep_rew = 0
 
         state = self.getState()
@@ -187,8 +188,8 @@ class DroneEnv(gym.Env):
     def stepTask(self, task) :
 
         #dt = globalClock.getDt()
-        self.world.doPhysics(0.1)    
-           
+        self.world.doPhysics(0.1)
+
         #application of force
         force = Vec3(self.rotorForce[0], self.rotorForce[1], self.rotorForce[2])
         self.drone.applyCentralForce(force) #should be action
@@ -197,10 +198,10 @@ class DroneEnv(gym.Env):
 
 
     def step(self, action):
-        
+
         done = False
-        reward = 0        
-        
+        reward = 0
+
         self.t += 1
         reward = self.getReward()
         self.ep_rew += reward
@@ -208,59 +209,25 @@ class DroneEnv(gym.Env):
 
         self.rotorForce += action #0.2*action
 
-        #10 sub steps in each step 
-        for i in range(10) :         
-            c = taskMgr.step()         
+        basis = np.array([0,0,9.81], dtype = np.float)
 
-       
-        #stabilize
-        self.rotorForce = np.array([0,0,9.81], dtype = np.float)
-
-        #position constraint
-        #if np.max(np.abs(state[:3])) > 30 : 
-        #    done = True
-
-        #velocity constraint
-        #if np.max(np.abs(state[3:6])) > 20 :
-        #    done = True
-
-
-        #s = state[:3]
-        #print(s)
-        #d = np.linalg.norm(s - self.target)
-        
-        #proximity constraint 
-        #if d < 1 : 
-        #    done = True
+        #10 sub steps in each step
+        for i in range(10) :
+            c = taskMgr.step()
+            self.rotorForce -= 0.05*(self.rotorForce -basis)
 
         #time constraint
-        if self.t > 50 : 
+        if self.t > 50 :
             done = True
-        
+
         return state, reward, done, {}
 
-    def PlotReward(self) : 
-        
+    def PlotReward(self) :
+
         c = range(len(self.percentages))
-        plt.plot(self.percentMean, c= 'b', alpha = 0.8)        
+        plt.plot(self.percentMean, c= 'b', alpha = 0.8)
         plt.fill_between(c, np.array(self.percentMean)+np.array(self.percentStd), np.array(self.percentMean)-np.array(self.percentStd), color='g', alpha=0.3, label='Objective 1')
-    
+
         plt.grid()
         plt.savefig('rews.png')
         plt.close()
-
-'''
-env = DroneEnv()
-
-for ep in range(100) :     
-    env.reset()
-    for step in range(40) : 
-        
-        env.rotorForce += 0.3*(2*np.random.rand(3)-1)
-
-        a = env.rotorForce
-        s, r, done, info = env.step(a)
-        print(f'    {s}')
-        if done : 
-            break
-'''

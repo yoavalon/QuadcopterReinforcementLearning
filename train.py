@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 import os
 tf = try_import_tf()
 
-#from q4env import DroneEnv     #Render
-from q4envQ import DroneEnv     #Background execution
+from q4env import DroneEnv     #Render
+#from q4envQ import DroneEnv     #Background execution
 
 
 class CustomModel(TFModelV2):
@@ -28,7 +28,7 @@ class CustomModel(TFModelV2):
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
 
-        
+
         inter1 = tf.keras.layers.Dense(
             50,
             name="inter1",
@@ -54,11 +54,11 @@ class CustomModel(TFModelV2):
             activation='tanh',
             kernel_initializer=normc_initializer(0.01))(inter3)
 
-        
+
         CriticInter1 = tf.keras.layers.Dense(
             20,
             name="CriticInter1",
-            activation= None, #'tanh',
+            activation= 'tanh',
             kernel_initializer=normc_initializer(0.01))(self.inputs)
 
         #ac = tf.keras.layers.Dropout(0.5)(inter5)
@@ -69,13 +69,13 @@ class CustomModel(TFModelV2):
             name="actor",
             activation=None,
             kernel_initializer=normc_initializer(0.01))(inter4)
-        
+
         value_out = tf.keras.layers.Dense(
             1,
             name="critic",
             activation=None,
             kernel_initializer=normc_initializer(0.01))(CriticInter1)
-        
+
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
         self.register_variables(self.base_model.variables)
 
@@ -94,36 +94,41 @@ trainer = ppo.PPOTrainer(
     env=DroneEnv, config={
     "model": {
             "custom_model": "my_model",
-        },    
-    "gamma": 0.95, 
-    "lr" : 0.0001, 
-    "num_workers": 0, 
+        },
+    "gamma": 0.99,
+    "lr" : 0.0005,
+    "num_workers": 0,
 })
 
-while True:
-    trainer.train()    
+def train() :
+    while True:
+        trainer.train()
 
-'''
 p = './checkpoints'
-for folder in os.listdir(p):
-    for fname in os.listdir(os.path.join(p, folder)) :
-        if fname.endswith('.tune_metadata'):            
-            out = os.path.join(p, folder, fname)
-            out = os.path.splitext(out)[0] #without extension
-            trainer.restore(out)
-            print('=======================================')
-            print(out)
-            print('checkpoint restored')
-            break
 
-it = 0
-while True:
-    trainer.train()
-    it+=1
+def restore() :
+    for folder in os.listdir(p):
+        for fname in os.listdir(os.path.join(p, folder)) :
+            if fname.endswith('.tune_metadata'):
+                out = os.path.join(p, folder, fname)
+                out = os.path.splitext(out)[0] #without extension
+                trainer.restore(out)
+                print('=======================================')
+                print(out)
+                print('checkpoint restored')
+                break
 
-    if it % 15 == 0 : 
-        checkpoint = trainer.save(p)
-        print('===================================')
-        print("checkpoint saved at: ", checkpoint)
+def trainCheckpoint() :
+    it = 0
+    while True:
+        trainer.train()
+        it+=1
 
-'''
+        if it % 15 == 0 :
+            checkpoint = trainer.save(p)
+            print('===================================')
+            print("checkpoint saved at: ", checkpoint)
+
+restore()
+#trainCheckpoint()
+train()
