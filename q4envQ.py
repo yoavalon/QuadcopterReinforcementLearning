@@ -59,7 +59,7 @@ class DroneEnv(gym.Env):
         self.world.attachRigidBody(node)
 
         #ground
-        ground = loader.loadModel("models/ground2.gltf")
+        ground = loader.loadModel("models/ground.gltf")
         ground.reparentTo(render)
         ground.setScale(1)
         ground.setPos(Vec3(0, 0, -2))
@@ -81,7 +81,7 @@ class DroneEnv(gym.Env):
         self.droneN = render.attachNewNode(self.drone)
         self.droneN.setPos(0, 0, 3)
         self.world.attachRigidBody(self.drone)
-        model = loader.loadModel('models/second2.gltf')
+        model = loader.loadModel('models/drone.gltf')
         model.setHpr(0, 90, 0)
         model.flattenLight()
         model.reparentTo(self.droneN)
