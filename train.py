@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 import os
 tf = try_import_tf()
 
-from q4env import DroneEnv     #Render
-#from q4envQ import DroneEnv     #Background execution
+#from q4env import DroneEnv     #Render
+from q4envQ import DroneEnv     #Background execution
 
 
 class CustomModel(TFModelV2):
@@ -30,45 +30,36 @@ class CustomModel(TFModelV2):
 
 
         inter1 = tf.keras.layers.Dense(
-            50,
+            90,
             name="inter1",
             activation= None, #'tanh',
             kernel_initializer=normc_initializer(0.01))(self.inputs)
 
-        #'''
         inter2 = tf.keras.layers.Dense(
-            100,
+            90,
             name="inter2",
             activation='tanh',
             kernel_initializer=normc_initializer(0.01))(inter1)
 
         inter3 = tf.keras.layers.Dense(
-            50,
+            90,
             name="inter3",
             activation='tanh',
             kernel_initializer=normc_initializer(0.01))(inter2)
 
-        inter4 = tf.keras.layers.Dense(
-            20,
-            name="inter4",
-            activation='tanh',
-            kernel_initializer=normc_initializer(0.01))(inter3)
-
-
         CriticInter1 = tf.keras.layers.Dense(
-            20,
+            18,
             name="CriticInter1",
             activation= 'tanh',
             kernel_initializer=normc_initializer(0.01))(self.inputs)
 
         #ac = tf.keras.layers.Dropout(0.5)(inter5)
-        #'''
 
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="actor",
             activation=None,
-            kernel_initializer=normc_initializer(0.01))(inter4)
+            kernel_initializer=normc_initializer(0.01))(inter3)
 
         value_out = tf.keras.layers.Dense(
             1,
@@ -96,8 +87,9 @@ trainer = ppo.PPOTrainer(
             "custom_model": "my_model",
         },
     "gamma": 0.99,
-    "lr" : 0.0005,
+    "lr" : 0.001,
     "num_workers": 0,
+    "entropy_coeff": 0.02, #added
 })
 
 def train() :
@@ -129,6 +121,6 @@ def trainCheckpoint() :
             print('===================================')
             print("checkpoint saved at: ", checkpoint)
 
-restore()
-#trainCheckpoint()
-train()
+#restore()
+trainCheckpoint()
+#train()
