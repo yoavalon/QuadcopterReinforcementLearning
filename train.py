@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 import os
 tf = try_import_tf()
 
-#from q4env import DroneEnv     #Render
-from q4envQ import DroneEnv     #Background execution
+from q4env import DroneEnv     #Render
+#from q4envQ import DroneEnv     #Background execution
 
 
 class CustomModel(TFModelV2):
@@ -52,8 +52,6 @@ class CustomModel(TFModelV2):
             name="CriticInter1",
             activation= 'tanh',
             kernel_initializer=normc_initializer(0.01))(self.inputs)
-
-        #ac = tf.keras.layers.Dropout(0.5)(inter5)
 
         layer_out = tf.keras.layers.Dense(
             num_outputs,
@@ -121,6 +119,6 @@ def trainCheckpoint() :
             print('===================================')
             print("checkpoint saved at: ", checkpoint)
 
-#restore()
+restore()
 trainCheckpoint()
 #train()
