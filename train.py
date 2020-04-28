@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 import os
 tf = try_import_tf()
 
-#from q4env import DroneEnv     #Render
-from q4envQ import DroneEnv     #Background execution
+from q4env import DroneEnv     #Render
+#from q4envQ import DroneEnv     #Background execution
 
 
 class CustomModel(TFModelV2):
