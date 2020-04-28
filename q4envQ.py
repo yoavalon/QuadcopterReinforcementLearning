@@ -3,7 +3,7 @@ import gym
 from gym.spaces import Discrete, Box
 import matplotlib.pyplot as plt
 
-#for without rendering
+#no rendering
 from pandac.PandaModules import loadPrcFileData
 loadPrcFileData("", "window-type none")
 
@@ -21,7 +21,6 @@ from panda3d.bullet import BulletDebugNode
 class DroneEnv(gym.Env):
 
     def __init__(self,config):
-        #def __init__(self):
 
         self.ep = 0
         self.ep_rew = 0
@@ -38,42 +37,51 @@ class DroneEnv(gym.Env):
         self.percentStd = []
 
         taskMgr.add(self.stepTask, 'update')
+        taskMgr.add(self.lightTask, 'lights')
 
         self.rotorForce = np.array([0,0,9.81], dtype = np.float)
 
     def construct(self) :
 
-        #base.cam.setPos(0, 30, 0)
+        #base.cam.setPos(17,17,1)
         #base.cam.lookAt(0, 0, 0)
+
+        #wp = WindowProperties()
+        #wp.setSize(1200, 500)
+        #base.win.requestProperties(wp)
 
         # World
         self.world = BulletWorld()
         self.world.setGravity(Vec3(0, 0, -9.81))
 
-        # Plane
-        shape = BulletPlaneShape(Vec3(0, 0, 1), 1)
-        node = BulletRigidBodyNode('Ground')
-        node.addShape(shape)
-        npn = render.attachNewNode(node)
-        npn.setPos(0, 0, -2)
-        self.world.attachRigidBody(node)
+        #skybox
+        skybox = loader.loadModel('models/skybox.gltf')
+        skybox.setTexGen(TextureStage.getDefault(), TexGenAttrib.MWorldPosition)
+        skybox.setTexProjector(TextureStage.getDefault(), render, skybox)
+        skybox.setTexScale(TextureStage.getDefault(), 1)
+        skybox.setScale(100)
+        skybox.setHpr(0, -90, 0)
 
-        #ground
-        ground = loader.loadModel("models/ground.gltf")
-        ground.reparentTo(render)
-        ground.setScale(1)
-        ground.setPos(Vec3(0, 0, -2))
-        ground.setHpr(270, 90, 0)
+        tex = loader.loadCubeMap('textures/s_#.jpg')
+        skybox.setTexture(tex)
+        skybox.reparentTo(render)
+
+        render.setTwoSided(True)
 
         #Light
         plight = PointLight('plight')
-        plight.setColor((0.9, 0.8, 0.9, 1))
+        plight.setColor((1.0, 1.0, 1.0, 1))
         plnp = render.attachNewNode(plight)
-        plnp.setPos(0, 10, 5)
+        plnp.setPos(0, 0, 0)
         render.setLight(plnp)
 
-        # Drone
+        # Create Ambient Light
+        ambientLight = AmbientLight('ambientLight')
+        ambientLight.setColor((0.15, 0.05, 0.05, 1))
+        ambientLightNP = render.attachNewNode(ambientLight)
+        render.setLight(ambientLightNP)
 
+        # Drone
         shape = BulletBoxShape(Vec3(0.5, 0.5, 0.5))
         self.drone = BulletRigidBodyNode('Box')
         self.drone.setMass(1.0)
@@ -105,12 +113,42 @@ class DroneEnv(gym.Env):
         placeholder.setPos(Vec3(-3.05, 3.0, 0))
         blade.instanceTo(placeholder)
 
+        #drone ligths
+        self.plight2 = PointLight('plight')
+        self.plight2.setColor((0.9, 0.1, 0.1, 1))
+        plnp = self.droneN.attachNewNode(self.plight2)
+        plnp.setPos(0, 0, -1)
+        self.droneN.setLight(plnp)
+
+        #over light
+        plight3 = PointLight('plight')
+        plight3.setColor((0.9, 0.8, 0.8, 1))
+        plnp = self.droneN.attachNewNode(plight3)
+        plnp.setPos(0, 0, 2)
+        self.droneN.setLight(plnp)
+
         #target object
         self.targetObj = loader.loadModel("models/target.gltf")
         self.targetObj.reparentTo(render)
-        #self.targetObj.setPos(Vec3(1, 1, 2))
         self.targetObj.setPos(Vec3(self.target[0], self.target[1], self.target[2]))
 
+    def lightTask(self, task) :
+
+        count = globalClock.getFrameCount()
+
+        rest = count % 100
+        if rest < 10 :
+            self.plight2.setColor((0.1, 0.9, 0.1, 1))
+        elif rest > 30 and rest < 40 :
+            self.plight2.setColor((0.9, 0.1, 0.1, 1))
+        elif rest > 65 and rest < 70 :
+            self.plight2.setColor((0.9,0.9, 0.9, 1))
+        elif rest > 75 and rest < 80 :
+            self.plight2.setColor((0.9,0.9, 0.9, 1))
+        else :
+            self.plight2.setColor((0.1, 0.1, 0.1, 1))
+
+        return task.cont
 
     def getState(self) :
 
@@ -120,10 +158,9 @@ class DroneEnv(gym.Env):
 
         velocity = np.nan_to_num(np.array([vel[0], vel[1], vel[2]]))
         position = np.array([po[0], po[1], po[2]])
-        #angle = np.array([ang[0], ang[1], ang[2]])/360
 
         state = np.array([position, self.target, velocity]).reshape(9,)
-        state = np.around(state, decimals = 2)  #experimental, decimal places
+        state = np.around(state, decimals = 2)
 
         return state
 
@@ -187,12 +224,15 @@ class DroneEnv(gym.Env):
 
     def stepTask(self, task) :
 
-        #dt = globalClock.getDt()
+        dt = globalClock.getDt()
         self.world.doPhysics(0.1)
 
         #application of force
         force = Vec3(self.rotorForce[0], self.rotorForce[1], self.rotorForce[2])
         self.drone.applyCentralForce(force) #should be action
+
+        po = self.drone.transform.pos
+        position = np.array([po[0], po[1], po[2]])
 
         return task.cont
 

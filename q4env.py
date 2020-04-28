@@ -25,7 +25,6 @@ class DroneEnv(gym.Env):
         self.action_space = Box(-1,1,shape=(3,))
         self.observation_space = Box(-50,50,shape=(9,))
 
-
         self.target = 8*np.random.rand(3)
         self.construct()
 
@@ -78,7 +77,6 @@ class DroneEnv(gym.Env):
         ambientLightNP = render.attachNewNode(ambientLight)
         render.setLight(ambientLightNP)
 
-
         # Drone
         shape = BulletBoxShape(Vec3(0.5, 0.5, 0.5))
         self.drone = BulletRigidBodyNode('Box')
@@ -128,7 +126,6 @@ class DroneEnv(gym.Env):
         #target object
         self.targetObj = loader.loadModel("models/target.gltf")
         self.targetObj.reparentTo(render)
-        #self.targetObj.setPos(Vec3(1, 1, 2))
         self.targetObj.setPos(Vec3(self.target[0], self.target[1], self.target[2]))
 
     def lightTask(self, task) :
@@ -159,7 +156,7 @@ class DroneEnv(gym.Env):
         position = np.array([po[0], po[1], po[2]])
 
         state = np.array([position, self.target, velocity]).reshape(9,)
-        state = np.around(state, decimals = 2)  #experimental, decimal places
+        state = np.around(state, decimals = 2)
 
         return state
 
@@ -191,7 +188,6 @@ class DroneEnv(gym.Env):
         s = self.getState()
         d = np.linalg.norm(s[:3] - self.target)
         ds = np.linalg.norm(s[:3] - np.array([0,0,4]))
-
 
         if self.ep %50 == 0 :
             self.PlotReward()
@@ -233,8 +229,6 @@ class DroneEnv(gym.Env):
 
         po = self.drone.transform.pos
         position = np.array([po[0], po[1], po[2]])
-
-        #self.smoke.setPos(Vec3(position[0], position[1], position[2]))
 
         return task.cont
 
