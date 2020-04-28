@@ -20,13 +20,13 @@ The environment q4envQ.py runs training in background without visualization and 
 
 For background training just comment the first environment
 
-  #from q4env import DroneEnv   
-  from q4envQ import DroneEnv   #background  
+    #from q4env import DroneEnv   
+    from q4envQ import DroneEnv   #background  
 
 For visualization use the second
 
-  from q4env import DroneEnv     #Render
-  #from q4envQ import DroneEnv     
+    from q4env import DroneEnv     #Render
+    #from q4envQ import DroneEnv     
 
 
 To cite this repository in publications:
