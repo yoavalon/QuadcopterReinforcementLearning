@@ -31,7 +31,7 @@ class CustomModel(TFModelV2):
         inter1 = tf.keras.layers.Dense(
             90,
             name="inter1",
-            activation= None, #'tanh',
+            activation= 'tanh',
             kernel_initializer=normc_initializer(0.01))(self.inputs)
 
         inter2 = tf.keras.layers.Dense(
@@ -46,6 +46,12 @@ class CustomModel(TFModelV2):
             activation='tanh',
             kernel_initializer=normc_initializer(0.01))(inter2)
 
+        inter4 = tf.keras.layers.Dense(
+            90,
+            name="inter4",
+            activation='tanh',
+            kernel_initializer=normc_initializer(0.01))(inter3)
+
         CriticInter1 = tf.keras.layers.Dense(
             18,
             name="CriticInter1",
@@ -56,7 +62,7 @@ class CustomModel(TFModelV2):
             num_outputs,
             name="actor",
             activation=None,
-            kernel_initializer=normc_initializer(0.01))(inter3)
+            kernel_initializer=normc_initializer(0.01))(inter4)
 
         value_out = tf.keras.layers.Dense(
             1,
@@ -84,9 +90,9 @@ trainer = ppo.PPOTrainer(
             "custom_model": "my_model",
         },
     "gamma": 0.99,
-    "lr" : 0.0005,
+    "lr" : 0.0001,
     "num_workers": 0,
-    "entropy_coeff": 0.02, #added
+    #"entropy_coeff": 0.02, #added
 })
 
 def train() :
