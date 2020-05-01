@@ -176,9 +176,6 @@ class DroneEnv(gym.Env):
             reward = 5 - d
             reward = reward/20
 
-        if np.sum(s[6:9]) == 0 :
-            reward = -0.1
-
         return reward
 
     def reset(self):
@@ -226,6 +223,8 @@ class DroneEnv(gym.Env):
 
         dt = globalClock.getDt()
         self.world.doPhysics(0.1)
+
+        self.drone.setDeactivationEnabled(False)
 
         #application of force
         force = Vec3(self.rotorForce[0], self.rotorForce[1], self.rotorForce[2])

@@ -28,7 +28,6 @@ class CustomModel(TFModelV2):
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
 
-
         inter1 = tf.keras.layers.Dense(
             90,
             name="inter1",
@@ -85,7 +84,7 @@ trainer = ppo.PPOTrainer(
             "custom_model": "my_model",
         },
     "gamma": 0.99,
-    "lr" : 0.001,
+    "lr" : 0.0005,
     "num_workers": 0,
     "entropy_coeff": 0.02, #added
 })
