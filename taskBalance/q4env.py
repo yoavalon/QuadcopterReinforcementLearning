@@ -28,8 +28,8 @@ class DroneEnv(gym.Env):
         self.ep_rew = 0
         self.t = 0
 
-        self.action_space = Box(-1,1,shape=(3,))
-        self.observation_space = Box(-50,50,shape=(9,))
+        self.action_space = Box(-1,1,shape=(4,))
+        self.observation_space = Box(-50,50,shape=(6,))
 
         self.target = 8*np.random.rand(3)
         self.construct()
@@ -41,7 +41,7 @@ class DroneEnv(gym.Env):
         taskMgr.add(self.stepTask, 'update')
         taskMgr.add(self.lightTask, 'lights')
 
-        self.rotorForce = np.array([0,0,9.81], dtype = np.float)
+        self.forceDiff = np.array([1,1,1,1], dtype = np.float)/4
 
     def construct(self) :
 
@@ -59,14 +59,14 @@ class DroneEnv(gym.Env):
         self.world.setGravity(Vec3(0, 0, -9.81))
 
         #skybox
-        skybox = loader.loadModel('models/skybox.gltf')
+        skybox = loader.loadModel('../models/skybox.gltf')
         skybox.setTexGen(TextureStage.getDefault(), TexGenAttrib.MWorldPosition)
         skybox.setTexProjector(TextureStage.getDefault(), render, skybox)
         skybox.setTexScale(TextureStage.getDefault(), 1)
         skybox.setScale(100)
         skybox.setHpr(0, -90, 0)
 
-        tex = loader.loadCubeMap('textures/s_#.jpg')
+        tex = loader.loadCubeMap('../textures/s_#.jpg')
         skybox.setTexture(tex)
         skybox.reparentTo(render)
 
@@ -93,12 +93,12 @@ class DroneEnv(gym.Env):
         self.droneN = render.attachNewNode(self.drone)
         self.droneN.setPos(0, 0, 3)
         self.world.attachRigidBody(self.drone)
-        model = loader.loadModel('models/drone.gltf')
+        model = loader.loadModel('../models/drone.gltf')
         model.setHpr(0, 90, 0)
         model.flattenLight()
         model.reparentTo(self.droneN)
 
-        blade = loader.loadModel("models/blade.gltf")
+        blade = loader.loadModel("../models/blade.gltf")
         blade.reparentTo(self.droneN)
         blade.setHpr(0, 90, 0)
         blade.setPos(Vec3(0.3, -3.0, 1.1))
@@ -132,7 +132,7 @@ class DroneEnv(gym.Env):
         self.droneN.setLight(plnp)
 
         #target object
-        self.targetObj = loader.loadModel("models/target.gltf")
+        self.targetObj = loader.loadModel("../models/target.gltf")
         self.targetObj.reparentTo(render)
         self.targetObj.setPos(Vec3(self.target[0], self.target[1], self.target[2]))
 
@@ -156,28 +156,24 @@ class DroneEnv(gym.Env):
 
     def getState(self) :
 
-        vel = self.drone.get_linear_velocity()
+        #vel = self.drone.get_linear_velocity()
         po = self.drone.transform.pos
-        ang = self.droneN.getHpr()
+        #ang = self.droneN.getHpr()
 
-        velocity = np.nan_to_num(np.array([vel[0], vel[1], vel[2]]))
+        ang = render.getRelativeVector(self.droneN,Vec3(0,0,1))
+        normal = np.array([ang[0], ang[1], ang[2]])
+
+        #velocity = np.nan_to_num(np.array([vel[0], vel[1], vel[2]]))
         position = np.array([po[0], po[1], po[2]])
 
-        state = np.array([position, self.target, velocity]).reshape(9,)
-        state = np.around(state, decimals = 2)
+        state = np.array([position, normal]).reshape(6,)
+        state = np.around(state, decimals = 3)
 
         return state
 
     def getReward(self) :
 
-        reward = 0
-
-        s = self.getState()
-        d = np.linalg.norm(s[0:3] - s[3:6])
-
-        if d < 5 :
-            reward = 5 - d
-            reward = reward/20
+        reward = 0.01
 
         return reward
 
@@ -192,6 +188,8 @@ class DroneEnv(gym.Env):
         s = self.getState()
         d = np.linalg.norm(s[:3] - self.target)
         ds = np.linalg.norm(s[:3] - np.array([0,0,4]))
+
+        self.forceDiff = np.array([0,0,0,0], dtype = np.float) #np.array([1,1,1,1], dtype = np.float)/4
 
         if self.ep %50 == 0 :
             self.PlotReward()
@@ -233,15 +231,20 @@ class DroneEnv(gym.Env):
 
         self.drone.setDeactivationEnabled(False)
 
-        #application of force
-        force = Vec3(self.rotorForce[0], self.rotorForce[1], self.rotorForce[2])
-        self.drone.applyCentralForce(force) #should be action
+        #inclination
+        ang = render.getRelativeVector(self.droneN,Vec3(0,0,1))
+        normal = np.array([ang[0], ang[1], ang[2]])
 
-        po = self.drone.transform.pos
-        position = np.array([po[0], po[1], po[2]])
+        if np.sum(normal) > 0 :
+            normal = normal/np.sum(normal)
+
+        self.drone.applyImpulse(Vec3(self.forceDiff[0]*normal[0], self.forceDiff[0]*normal[1], self.forceDiff[0]*normal[2]), Point3(3,0,1))
+        self.drone.applyImpulse(Vec3(self.forceDiff[1]*normal[0], self.forceDiff[1]*normal[1], self.forceDiff[1]*normal[2]), Point3(-3,0,1))
+        self.drone.applyImpulse(Vec3(self.forceDiff[2]*normal[0], self.forceDiff[2]*normal[1], self.forceDiff[2]*normal[2]), Point3(0,3,1))
+        self.drone.applyImpulse(Vec3(self.forceDiff[3]*normal[0], self.forceDiff[3]*normal[1], self.forceDiff[3]*normal[2]), Point3(0,-3,1))
+
 
         return task.cont
-
 
     def step(self, action):
 
@@ -253,18 +256,24 @@ class DroneEnv(gym.Env):
         self.ep_rew += reward
         state = self.getState()
 
-        self.rotorForce += action #0.2*action
+        basis = np.array([1,1,1,1], np.float32)/250
+        self.forceDiff = basis + 0.01*action
+        taskMgr.step()
 
-        basis = np.array([0,0,9.81], dtype = np.float)
-
-        #10 sub steps in each step
-        for i in range(10) :
-            c = taskMgr.step()
-            self.rotorForce -= 0.05*(self.rotorForce -basis)
+        #for i in range(10) :
+        #    self.forceDiff = basis
+        #    taskMgr.step()
 
         #time constraint
-        if self.t > 50 :
+        if self.t > 500 :
             done = True
+
+        #inclination constraint
+        ang = render.getRelativeVector(self.droneN,Vec3(0,0,1))
+        normal = np.array([ang[0], ang[1], ang[2]])
+        if np.max(np.abs(normal[:2])) > 0.2 :
+            done = True
+
 
         return state, reward, done, {}
 
