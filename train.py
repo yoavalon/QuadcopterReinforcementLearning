@@ -16,9 +16,7 @@ import matplotlib.pyplot as plt
 import os
 tf = try_import_tf()
 
-from q4env import DroneEnv     #Render
-#from q4envQ import DroneEnv     #Background execution
-
+from q4env import DroneEnv
 
 class CustomModel(TFModelV2):
 
@@ -90,9 +88,8 @@ trainer = ppo.PPOTrainer(
             "custom_model": "my_model",
         },
     "gamma": 0.99,
-    "lr" : 0.0001,
+    "lr" : 0.0005,
     "num_workers": 0,
-    #"entropy_coeff": 0.02, #added
 })
 
 def train() :
@@ -124,6 +121,6 @@ def trainCheckpoint() :
             print('===================================')
             print("checkpoint saved at: ", checkpoint)
 
-restore()
+#restore()
 trainCheckpoint()
 #train()

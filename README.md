@@ -16,18 +16,21 @@ To solve the environment using Proximate Policy Optimization (PPO) (https://arxi
 
 The Environment is highly customizeable and many other tasks can be implemented.
 
-The environment q4envQ.py runs training in background without visualization and q4env.py has a visualization. Since models are stored using train.py we recommend using q4envQ.py for training, and to visualiza restore the model to q4env.py
+The environment can be run without rendering for training and for visualization with rendering.
 
-For background training just comment the first environment
+In order to render the environment in q4env.py simply set:
 
-    #from q4env import DroneEnv   
-    from q4envQ import DroneEnv   #background  
+    self.visualize = True
 
-For visualization use the second
+For no rendering and quick trainig in background set:
 
-    from q4env import DroneEnv     #Render
-    #from q4envQ import DroneEnv     
+    self.visualize = False
 
+To restore a previous checkpoint simpy uncomment restore() in train.py. The train() function will not create checkpoints where as the trainCheckpoint() function will.
+
+    #restore()
+    trainCheckpoint()
+    #train()
 
 To cite this repository in publications:
 

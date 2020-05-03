@@ -2,8 +2,6 @@ import numpy as np
 import gym
 from gym.spaces import Discrete, Box
 import matplotlib.pyplot as plt
-
-import direct.directbase.DirectStart
 from panda3d.core import Vec3
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
@@ -17,6 +15,14 @@ from panda3d.bullet import BulletDebugNode
 class DroneEnv(gym.Env):
 
     def __init__(self,config):
+
+        self.visualize = False
+
+        if self.visualize == False :
+            from pandac.PandaModules import loadPrcFileData
+            loadPrcFileData("", "window-type none")
+
+        import direct.directbase.DirectStart
 
         self.ep = 0
         self.ep_rew = 0
@@ -39,12 +45,14 @@ class DroneEnv(gym.Env):
 
     def construct(self) :
 
-        base.cam.setPos(17,17,1)
-        base.cam.lookAt(0, 0, 0)
+        if self.visualize :
 
-        wp = WindowProperties()
-        wp.setSize(1200, 500)
-        base.win.requestProperties(wp)
+            base.cam.setPos(17,17,1)
+            base.cam.lookAt(0, 0, 0)
+
+            wp = WindowProperties()
+            wp.setSize(1200, 500)
+            base.win.requestProperties(wp)
 
         # World
         self.world = BulletWorld()
@@ -165,7 +173,6 @@ class DroneEnv(gym.Env):
         reward = 0
 
         s = self.getState()
-
         d = np.linalg.norm(s[0:3] - s[3:6])
 
         if d < 5 :
@@ -218,7 +225,11 @@ class DroneEnv(gym.Env):
     def stepTask(self, task) :
 
         dt = globalClock.getDt()
-        self.world.doPhysics(dt)
+
+        if self.visualize :
+            self.world.doPhysics(dt)
+        else :
+            self.world.doPhysics(0.1)
 
         self.drone.setDeactivationEnabled(False)
 
