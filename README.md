@@ -43,7 +43,7 @@ To cite this repository in publications:
       howpublished = {\url{https://github.com/yoavalon/Quadcopter-env}},
     }
 
-## Approaching a target -task (taskNavigate)
+## Approaching a target -task (/taskNavigate)
 In the first default task the environment is configured to motivate learning of moving to drone to a green target point.
 
 ![Drone](/img/singleQuad.png)
@@ -59,11 +59,11 @@ For 3 continous actions that control the drones inclination force. The 6 observa
 ![Drone](/img/rews80.png)
 Mean reward signal over episode.
 
-## Balance the Quadcopter
+## Balance the Quadcopter (/taskBalance)
 
-In this task the action space has 4 dimensions and allows the enginge control. With constant reward signal the episode length becomes the decisive criteria and the target is to balance the drone as long as possible. By adding randim impulses wind can be simulated. 
+In this task the action space has 4 dimensions and allows the enginge control. With constant reward signal the episode length becomes the decisive criteria and the target is to balance the drone as long as possible. By adding randim impulses wind can be simulated.
 
-## Multi-Agent Coordination
+## Multi-Agent Coordination (/taskMulti)
 This task is motivated my Multi-Agent Reinforcement Learning environments that extract multiple reward signals and a single policy extracts actions that are split to multiple drones. Respective multiple reward signals are returned. The same target point as in the previous task has to be achieved by multiple drones now.
 The challenge here is to construct networks that are able to perform a distinctive value estimation. A standard actor-critic reinforcement learning appraoch would fail here and optimize parts of the policy that have a dominant reward extraction.
 
