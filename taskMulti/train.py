@@ -88,7 +88,7 @@ trainer = ppo.PPOTrainer(
             "custom_model": "my_model",
         },
     "gamma": 0.99,
-    "lr" : 0.0005,
+    "lr" : 0.001,
     "num_workers": 0,
 })
 
@@ -121,6 +121,6 @@ def trainCheckpoint() :
             print('===================================')
             print("checkpoint saved at: ", checkpoint)
 
-restore()
+#restore()
 trainCheckpoint()
 #train()

@@ -15,9 +15,9 @@ from direct.actor.Actor import Actor
 from panda3d.bullet import BulletDebugNode
 import Drone
 
-class DroneEnv(gym.Env):
+class DroneEnv():
 
-    def __init__(self,config):
+    def __init__(self):
 
         self.visualize = False
         self.actors = 2
@@ -31,6 +31,7 @@ class DroneEnv(gym.Env):
 
         self.ep = 0
         self.ep_rew = 0
+
         self.t = 0
 
         self.action_space = Box(-1,1,shape=((self.actors*3),))
@@ -137,22 +138,32 @@ class DroneEnv(gym.Env):
         state = np.array(stateVec).reshape((3*self.actors + 3),)
         state = np.around(state, decimals = 2)
 
+        state = np.expand_dims(state, 0)
+
         return state
 
     def getReward(self) :
 
-        reward = 0
+        reward1 = 0
+        reward2 = 0
         distance = 0
 
-        for uav in self.uavs :
-            pos = uav.drone.transform.pos
-            d = np.linalg.norm(pos - self.target)
+        pos = self.uavs[0].drone.transform.pos
+        d = np.linalg.norm(pos - self.target)
 
-            if d < 5 :
-                reward = 5 - d
-                reward = reward/20
+        if d < 5 :
+            reward1 = 5 - d
+            reward1 = reward1/20
 
-        return reward
+        pos = self.uavs[1].drone.transform.pos
+        d = np.linalg.norm(pos - self.target)
+
+        if d < 5 :
+            reward2 = 5 - d
+            reward2 = reward2/20
+
+        return reward1, reward2
+
 
     def reset(self):
 
@@ -162,8 +173,6 @@ class DroneEnv(gym.Env):
         self.percentMean.append(me)
         self.percentStd.append(np.std(self.percentages[-500:]))
 
-        if self.ep %50 == 0 :
-            self.PlotReward()
 
         print(f'{self.ep}   {self.t}    {self.ep_rew:+8.2f}    {me:+6.2f}')
 
@@ -217,8 +226,8 @@ class DroneEnv(gym.Env):
         reward = 0
 
         self.t += 1
-        reward = self.getReward()
-        self.ep_rew += reward
+        reward1, reward2 = self.getReward()
+        self.ep_rew += reward1 + reward2
         state = self.getState()
 
         self.forces += action
@@ -244,14 +253,4 @@ class DroneEnv(gym.Env):
             if np.max(np.abs(pos)) > 49 :
                 done = True
 
-        return state, reward, done, {}
-
-    def PlotReward(self) :
-
-        c = range(len(self.percentages))
-        plt.plot(self.percentMean, c= 'b', alpha = 0.8)
-        plt.fill_between(c, np.array(self.percentMean)+np.array(self.percentStd), np.array(self.percentMean)-np.array(self.percentStd), color='g', alpha=0.3, label='Objective 1')
-
-        plt.grid()
-        plt.savefig('rews.png')
-        plt.close()
+        return state, reward1, reward2, done, {}
