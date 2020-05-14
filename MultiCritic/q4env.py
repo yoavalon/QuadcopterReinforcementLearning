@@ -149,17 +149,17 @@ class DroneEnv():
         distance = 0
 
         pos = self.uavs[0].drone.transform.pos
-        d = np.linalg.norm(pos - self.target)
+        d1 = np.linalg.norm(pos - self.target)
 
-        if d < 5 :
-            reward1 = 5 - d
+        if d1 < 10 :
+            reward1 = 10 - d1
             reward1 = reward1/20
 
         pos = self.uavs[1].drone.transform.pos
-        d = np.linalg.norm(pos - self.target)
+        d2 = np.linalg.norm(pos - self.target)
 
-        if d < 5 :
-            reward2 = 5 - d
+        if d2 < 10 :
+            reward2 = 10 - d2
             reward2 = reward2/20
 
         return reward1, reward2
@@ -173,25 +173,36 @@ class DroneEnv():
         self.percentMean.append(me)
         self.percentStd.append(np.std(self.percentages[-500:]))
 
+        state = self.getState()
 
-        print(f'{self.ep}   {self.t}    {self.ep_rew:+8.2f}    {me:+6.2f}')
+        vel1 = self.uavs[0].drone.get_linear_velocity()
+        velocity1 = np.nan_to_num(np.array([vel1[0], vel1[1], vel1[2]]))
+        v1 = np.mean(np.abs(velocity1))
 
-        prevPos = 8*(np.random.rand(3)-0.5) + 8*(np.random.rand(3)-0.5) - np.array([0,0,2], np.float32)
+        vel2 = self.uavs[1].drone.get_linear_velocity()
+        velocity2 = np.nan_to_num(np.array([vel2[0], vel2[1], vel2[2]]))
+        v2 = np.mean(np.abs(velocity2))
+
+        print(f'{self.ep}  {self.t}  {self.ep_rew:+8.2f}  {me:+6.2f}   {v1:+4.2f}  {v2:+4.2f}  {state}')
+
+        #prevPos = 8*(np.random.rand(3)-0.5) + 8*(np.random.rand(3)-0.5) #- np.array([0,0,2], np.float32)
         #physics reset
         for uav in self.uavs :
-            inPos = prevPos + np.array([0,0,4], np.float32)
-            #print(f'{inPos}     {prevPos}')
-            prevPos = np.copy(inPos)
+            #inPos = prevPos + 8*(np.random.rand(3)-0.5) + 8*(np.random.rand(3)-0.5)
+            #prevPos = np.copy(inPos)
 
-            uav.body.setPos(inPos[0], inPos[1], inPos[2])
+            #uav.body.setPos(inPos[0], inPos[1], inPos[2])
             uav.body.setHpr(0, 0, 0)
             uav.drone.set_linear_velocity(Vec3(0,0,0))
             uav.drone.setAngularVelocity(Vec3(0,0,0))
 
+        self.uavs[0].body.setPos(-4, 0, -4)
+        self.uavs[1].body.setPos(4,0,4)
+
         self.forces = np.array([0,0,9.81]*self.actors, dtype = np.float)
 
         #define new target:
-        self.target = 8*(2*np.random.rand(3)-1)
+        self.target = np.zeros((3))  #8*(2*np.random.rand(3)-1)
         self.target[2] = np.abs(self.target[2])
         self.targetObj.setPos(Vec3(self.target[0], self.target[1], self.target[2]))
 
@@ -215,7 +226,8 @@ class DroneEnv():
         for i, uav in enumerate(self.uavs) :
             force = self.forces[i*3: (i+1)*3]
             forceVec3 = Vec3(force[0], force[1], force[2])
-            uav.drone.applyCentralForce(forceVec3)
+            if np.abs(force[0]) > 0 or np.abs(force[1]) > 0 or np.abs(force[2]) > 0 :
+                uav.drone.applyCentralForce(forceVec3)
 
         return task.cont
 
@@ -230,11 +242,11 @@ class DroneEnv():
         self.ep_rew += reward1 + reward2
         state = self.getState()
 
-        self.forces += action
         basis = np.array([0,0,9.81]*self.actors, dtype = np.float)
+        self.forces = 0.1*action + basis #0.05*action + basis
 
         #10 sub steps in each step
-        for i in range(10) :
+        for i in range(5) :
             c = taskMgr.step()
             self.forces -= 0.05*(self.forces - basis)
 
@@ -244,13 +256,13 @@ class DroneEnv():
                 break
 
         #time constraint
-        if self.t > 200 :
+        if self.t > 150 :
             done = True
 
         #position constraint :
         for uav in self.uavs :
             pos = uav.drone.transform.pos
-            if np.max(np.abs(pos)) > 49 :
+            if np.max(np.abs(pos)) > 30 :
                 done = True
 
         return state, reward1, reward2, done, {}

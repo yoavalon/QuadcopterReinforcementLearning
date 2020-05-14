@@ -2,7 +2,7 @@ import tensorflow as tf
 
 class Critic():
 
-    def __init__(self, learning_rate=0.002, scope="Critic"):
+    def __init__(self, learning_rate=0.0008, scope="Critic"):
         with tf.variable_scope(scope):
 
             self.state = tf.keras.layers.Input(shape=(9,), name="state")
@@ -12,13 +12,13 @@ class Critic():
                 18,
                 name="CriticInter1",
                 activation= 'tanh',
-                kernel_initializer='random_uniform')(self.state)
+                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None))(self.state)
 
             self.output_layer = tf.keras.layers.Dense(
                 1,
                 name="critic",
                 activation=None,
-                kernel_initializer='random_uniform')(CriticInter1)
+                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None))(CriticInter1)
 
             #may not be necessary
             self.value_estimate = tf.squeeze(self.output_layer)
