@@ -13,6 +13,10 @@ env = DroneEnv()
 
 def multi_critic(env, actor, discount_factor=0.95):
 
+    CriticLoss1 = 0
+    CriticLoss2 = 0
+    ActorLoss = 0
+
     for i_episode in range(100000):
 
         state = env.reset()
@@ -42,7 +46,7 @@ def multi_critic(env, actor, discount_factor=0.95):
             td_target = np.expand_dims(td_target,0) #ADDED
             td_target = np.expand_dims(td_target,0) #ADDED
 
-            critic1.update(state, td_target)
+            CriticLoss1 = critic1.update(state, td_target)
 
             #Critic2
             value_next2 = critic2.predict(next_state)
@@ -52,11 +56,10 @@ def multi_critic(env, actor, discount_factor=0.95):
             td_target2 = np.expand_dims(td_target2,0) #ADDED
             td_target2 = np.expand_dims(td_target2,0) #ADDED
 
-            critic2.update(state, td_target2)
+            CriticLoss2 = critic2.update(state, td_target2)
 
             #KEY POINT ==================================
             errors = [td_error1,td_error2]
-            #td_error = np.max(errors) #goes down rapidly
             td_error = np.min(errors)
             #============================================
 
@@ -66,20 +69,26 @@ def multi_critic(env, actor, discount_factor=0.95):
             action = np.expand_dims(action, 0)
 
             #td error here should be called advantage
-            actor.update(state, td_error, action)
+            ActorLoss = actor.update(state, td_error, action)
 
             state = next_state
-
 
         summary = tf.Summary(value=[tf.Summary.Value(tag='first/reward', simple_value=ep_r)])
         summary1 = tf.Summary(value=[tf.Summary.Value(tag='r/r1', simple_value=ep_r1)])
         summary2 = tf.Summary(value=[tf.Summary.Value(tag='r/r2', simple_value=ep_r2)])
         summary3 = tf.Summary(value=[tf.Summary.Value(tag='first/steps', simple_value=step)])
+        summary4 = tf.Summary(value=[tf.Summary.Value(tag='loss/critic1Loss', simple_value=CriticLoss1)])
+        summary5 = tf.Summary(value=[tf.Summary.Value(tag='loss/critic2Loss', simple_value=CriticLoss2)])
+        summary6 = tf.Summary(value=[tf.Summary.Value(tag='loss/ActorLoss', simple_value=np.sum(np.abs(ActorLoss)))])
+
         writer.add_summary(summary3, i_episode)
         writer.add_summary(summary, i_episode)
         writer.add_summary(summary1, i_episode)
         writer.add_summary(summary2, i_episode)
         writer.add_summary(summary3, i_episode)
+        writer.add_summary(summary4, i_episode)
+        writer.add_summary(summary5, i_episode)
+        writer.add_summary(summary6, i_episode)
 
 
 tf.reset_default_graph()

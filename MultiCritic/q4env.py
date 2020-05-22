@@ -148,19 +148,19 @@ class DroneEnv():
         reward2 = 0
         distance = 0
 
-        pos = self.uavs[0].drone.transform.pos
-        d1 = np.linalg.norm(pos - self.target)
+        pos1 = self.uavs[0].drone.transform.pos
+        d1 = np.linalg.norm(pos1 - self.target)
 
         if d1 < 10 :
             reward1 = 10 - d1
-            reward1 = reward1/20
+            reward1 = reward1/50
 
-        pos = self.uavs[1].drone.transform.pos
-        d2 = np.linalg.norm(pos - self.target)
+        pos2 = self.uavs[1].drone.transform.pos
+        d2 = np.linalg.norm(pos2 - self.target)
 
         if d2 < 10 :
             reward2 = 10 - d2
-            reward2 = reward2/20
+            reward2 = reward2/50
 
         return reward1, reward2
 

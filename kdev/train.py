@@ -22,8 +22,9 @@ while(True) :
 
         if (env.t+1) % configs.BATCH == 0 :
 
-            v = ppo.get_v(s_)
+            v = ppo.getValue(s_)
             buffer.discount(v)
+            #print(f'{v}   {np.linalg.norm(s[0:3]-s[3:6])}   {s}   ')
 
             f = buffer.format()
             ppo.update(f[0], f[1], f[2])

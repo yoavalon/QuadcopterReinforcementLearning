@@ -10,17 +10,18 @@ class Actor():
             self.advantage = tf.keras.layers.Input(shape=(1,), name="advantage")  #was target
 
             inter1 = tf.keras.layers.Dense(
-                90,
+                18,
                 name="inter1",
                 activation= 'tanh',
-                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None))(self.state)
+                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=None))(self.state)
 
             inter2 = tf.keras.layers.Dense(
-                90,
+                18,
                 name="inter2",
                 activation='tanh',
-                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None))(inter1)
+                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=None))(inter1)
 
+            '''
             inter3 = tf.keras.layers.Dense(
                 90,
                 name="inter3",
@@ -32,17 +33,24 @@ class Actor():
                 name="inter4",
                 activation='tanh',
                 kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None))(inter3)
+            '''
 
             layer_out = tf.keras.layers.Dense(
                 6,
                 name="actor",
                 activation= None, #'tanh',
-                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=None))(inter4)
+                kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=None))(inter2)
 
             self.action_out = tf.squeeze(layer_out) # tf.squeeze(tf.nn.softmax(self.output_layer))
 
             #CAN'T BE RIGHT !!!! -> target here should be advantage
-            self.loss = -tf.log(self.action_out) * self.advantage
+            #self.loss = -tf.log(self.action_out) * self.advantage
+            self.loss = -tf.log(tf.abs(self.action_out)) * self.advantage
+
+            #In this continous case we get nans in the loos since
+            #the action_output can be negative, then log(-x) is nan like 1/0
+            #This loss is made for discrete actions.
+            #Solution: Convert to discrete action.. simple as that
 
             self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
             self.train_op = self.optimizer.minimize(

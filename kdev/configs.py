@@ -1,8 +1,8 @@
-GAMMA = 0.9
-A_LR = 0.001
+GAMMA = 0.99
+A_LR = 0.0001
 C_LR = 0.002
-BATCH = 50
+BATCH = 150 #10
 A_UPDATE_STEPS = 10
 C_UPDATE_STEPS = 10
-S_DIM, A_DIM = 9, 3
-epsilon = 0.2
+S_DIM, A_DIM = 6, 3
+epsilon = 0.15
