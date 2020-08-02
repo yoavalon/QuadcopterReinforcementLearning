@@ -3,8 +3,6 @@ Quadcopter-env
 
 ![Drone](/img/Selection_077.png)
 
-![Drone](/img/quadImg.png)
-
 The Quadcopter-env is a **Physics Reinforcment Learning Environment** training a quadcopter to acccomplish various objectives. The environment was created using panda3d and it's Bullet a modern and open source physics engine (See https://www.panda3d.org/ and https://docs.panda3d.org/1.10/python/programming/physics/bullet/index)
 
 Prerequesits :
@@ -15,6 +13,8 @@ Prerequesits :
 
 The environment simulates the physics of quadcopter movement.
 To solve the environment using Proximate Policy Optimization (PPO) (https://arxiv.org/abs/1707.06347) we use the Reinforcement Learning Framework RLlib. (https://ray.readthedocs.io/en/latest/rllib.html).
+
+![Drone](/img/quadImg.png)
 
 The Environment is highly customizeable and many other tasks can be implemented.
 
